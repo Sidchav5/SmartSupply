@@ -88,9 +88,9 @@ useEffect(() => {
   className="card-image"
 />
 
-                  <div className="availability-badge">
+                  {/* <div className="availability-badge">
                     {calculateAvailablePercentage(product)}% Allocated
-                  </div>
+                  </div> */}
                 </div>
                 
                 <div className="card-content">
@@ -111,6 +111,10 @@ useEffect(() => {
                       <span className="stat-label">Online:</span>
                       <span className="stat-value">{product.online_quantity}</span>
                     </div>
+                    <div className="stat-item offline">
+  <span className="stat-label">Sold (Offline):</span>
+  <span className="stat-value">{product.offline_left}</span>
+</div>
                   </div>
                   
                   <div className="offline-allocations">

@@ -35,18 +35,27 @@ function Login() {
     const route = roleMap[form.role];
 
     try {
-      const res = await axios.post(`http://localhost:5000/login/${route}`, form);
-      setMessage({
-        text: `${res.data.message}, Welcome ${res.data.name}`,
-        type: 'success'
-      });
+  const res = await axios.post(`http://localhost:5000/login/${route}`, form);
+  
+  // ✅ Save relevant info to localStorage
+  localStorage.setItem("name", res.data.name);
+  localStorage.setItem("role", form.role);
+  localStorage.setItem("email", form.email);
 
-      // Redirect to role-specific page after short delay
-      setTimeout(() => {
-        navigate(redirectMap[form.role]);
-      }, 1000);
+  // Save manager_id only for Marketplace or Warehouse managers
+  if (res.data.manager_id) {
+    localStorage.setItem("manager_id", res.data.manager_id);
+  }
 
-    } catch (err) {
+  setMessage({
+    text: `${res.data.message}, Welcome ${res.data.name}`,
+    type: 'success'
+  });
+
+  setTimeout(() => {
+    navigate(redirectMap[form.role]);
+  }, 1000);
+}catch (err) {
       setMessage({
         text: err.response?.data?.message || 'Login failed. Please try again.',
         type: 'error'

@@ -1,73 +1,176 @@
-.marketplace-container {
-  padding: 40px 20px;
+/* Main dashboard container */
+.marketplace-dashboard {
+  min-height: calc(100vh - 120px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+  padding: 3rem 1rem;
+}
+
+/* Dashboard header */
+.dashboard-header {
   text-align: center;
-  background-color: #f4f6f8;
+  margin-bottom: 3rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.marketplace-container h2 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-  color: #2c3e50;
+.dashboard-header h1 {
+  font-size: 2.5rem;
+  color: #2b2d42;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #4361ee, #3a0ca3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.marketplace-container p {
-  font-size: 1rem;
-  margin-bottom: 30px;
-  color: #555;
+.dashboard-subtitle {
+  color: #6c757d;
+  font-size: 1.1rem;
+  line-height: 1.6;
 }
 
-.card-grid {
+/* Cards grid layout */
+.dashboard-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  justify-content: center;
-  padding: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
-.marketplace-card {
-  background: #fff;
+/* Individual card styling */
+.dashboard-card {
+  background: white;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
 }
 
-.marketplace-card:hover {
-  transform: translateY(-5px);
+.dashboard-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+/* Card image */
+.card-image-container {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
 }
 
 .card-image {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
-.card-body {
-  padding: 20px;
+.dashboard-card:hover .card-image {
+  transform: scale(1.05);
 }
 
-.card-body h3 {
-  font-size: 1.25rem;
-  margin-bottom: 10px;
-  color: #333;
+.card-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.card-body p {
-  font-size: 0.95rem;
-  color: #666;
-  margin-bottom: 20px;
+/* Card content */
+.card-content {
+  padding: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 200px);
 }
 
+.card-content h3 {
+  font-size: 1.4rem;
+  color: #2b2d42;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.card-content p {
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+/* Card button */
 .card-button {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #0078d4;
+  background: linear-gradient(to right, #4361ee, #3a0ca3);
   color: white;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: background-color 0.3s;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: auto;
 }
 
-.card-button:hover {
-  background-color: #005fa3;
+.card-button .arrow {
+  transition: transform 0.3s ease;
 }
+
+.dashboard-card:hover .card-button .arrow {
+  transform: translateX(5px);
+}
+
+.dashboard-card:hover .card-button {
+  background: linear-gradient(to right, #3a56d4, #2f0a8a);
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+  
+  .dashboard-subtitle {
+    font-size: 1rem;
+  }
+  
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .card-content {
+    padding: 1.5rem;
+  }
+  
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+} 
