@@ -95,10 +95,10 @@ export default function StoreAvailability() {
                   </div>
                   
                   <div className="inventory-stats">
-                    <div className="stat-item allocated">
+                    {/* <div className="stat-item allocated">
                       <span className="stat-label">Allocated</span>
                       <span className="stat-value">{product.allocated}</span>
-                    </div>
+                    </div> */}
                     <div className="stat-item current">
                       <span className="stat-label">Current</span>
                       <span className="stat-value">{product.current_stock}</span>

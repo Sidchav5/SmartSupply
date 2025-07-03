@@ -6,7 +6,7 @@ import os, json
 from datetime import date
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # Directory for sales logs
 SALES_DIR = os.path.join(os.getcwd(), 'src', 'offline_sales_history')
@@ -192,6 +192,81 @@ def product_availability():
         })
 
     return jsonify(response)
+@app.route('/warehouse/update_product', methods=['POST'])
+def update_product():
+    data = request.json
+    product_id = data.get('product_id')
+    name = data.get('name')  # Optional
+    total_quantity = data.get('total_quantity')
+    online_quantity = data.get('online_quantity')
+    offline_allocations = data.get('offline_allocations')
+    image_base64 = data.get('image_base64')
+
+    cursor = conn.cursor()
+
+    # Step 1: Ensure product exists
+    cursor.execute("SELECT name FROM products WHERE id = %s", (product_id,))
+    result = cursor.fetchone()
+    if not result:
+        return jsonify({'error': 'Product not found'}), 404
+    if not name:
+        name = result[0]
+
+    # Step 2: Update products table
+    cursor.execute("""
+        UPDATE products
+        SET name = %s, total_quantity = %s, image_base64 = %s
+        WHERE id = %s
+    """, (name, total_quantity, image_base64, product_id))
+
+    # Step 3: Update online_inventory only if it exists
+    cursor.execute("SELECT 1 FROM online_inventory WHERE product_id = %s", (product_id,))
+    if cursor.fetchone():
+        cursor.execute("""
+            UPDATE online_inventory
+            SET quantity = %s
+            WHERE product_id = %s
+        """, (online_quantity, product_id))
+    else:
+        return jsonify({'error': 'Online inventory for this product not found'}), 400
+
+    # Step 4: Update offline_inventory only for existing rows
+    for allocation in offline_allocations:
+        manager_id = allocation.get('manager_id')
+        quantity = allocation.get('quantity')
+
+        cursor.execute("""
+            SELECT 1 FROM offline_inventory
+            WHERE product_id = %s AND manager_id = %s
+        """, (product_id, manager_id))
+        if cursor.fetchone():
+            cursor.execute("""
+                UPDATE offline_inventory
+                SET quantity = %s
+                WHERE product_id = %s AND manager_id = %s
+            """, (quantity, product_id, manager_id))
+        else:
+            return jsonify({'error': f'Offline inventory not found for manager {manager_id}'}), 400
+
+    conn.commit()
+    return jsonify({'message': 'Product updated successfully'})
+
+
+@app.route('/warehouse/delete_product/<int:product_id>', methods=['DELETE', 'OPTIONS'])
+def delete_product(product_id):
+    cursor = conn.cursor()
+
+    # Delete all related rows from dependent tables first
+    cursor.execute("DELETE FROM marketplace_sales WHERE product_id = %s", (product_id,))
+    cursor.execute("DELETE FROM online_inventory WHERE product_id = %s", (product_id,))
+    cursor.execute("DELETE FROM offline_inventory WHERE product_id = %s", (product_id,))
+    
+    # Then delete from products
+    cursor.execute("DELETE FROM products WHERE id = %s", (product_id,))
+    
+    conn.commit()
+    return jsonify({'message': f'Product {product_id} and related records deleted successfully'}), 200
+
 
 @app.route("/marketplace/update-sales", methods=["POST"])
 def update_sales():

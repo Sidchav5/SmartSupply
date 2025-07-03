@@ -9,7 +9,8 @@ import WarehouseInventoryForm from './components/WarehouseInventoryForm';
 import WarehouseAvailability from './components/WarehouseAvailability';
 import MarketplaceUpdateSales from './components/MarketplaceUpdateSales';
 import StoreAvailability from "./components/storeManagerAvailability"; // ⬅️ Import new page
-
+import UpdateProduct from './components/UpdateProduct';
+import DeleteProduct from './components/DeleteProduct';
 // ...other imports
 const currentManagerId = localStorage.getItem("manager_id");
 
@@ -30,6 +31,9 @@ function App() {
          {/* warehouse routes */}
          <Route path="/warehouse/add-inventory" element={<WarehouseInventoryForm />} />
           <Route path="/warehouse/availability" element={<WarehouseAvailability />} />
+          <Route path="/warehouse/update_product" element={<UpdateProduct />} />
+          <Route path="/warehouse/delete_product" element={<DeleteProduct />} />
+
 
           {/* manger routes */}
            <Route path="/marketplace/update-sales" element={<MarketplaceUpdateSales managerId={currentManagerId} />} />
