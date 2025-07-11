@@ -34,14 +34,14 @@ function Warehouse() {
     },
     {
       title: "Update Products",
-      description: "Create detailed inventory and performance reports.",
-      icon: "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
+      description: "Update stock availability of current products.",
+      icon: "https://cdn-icons-png.flaticon.com/128/4140/4140115.png",
       action: "/warehouse/update_product"
     },
     {
       title: "Delete Products",
-      description: "Create detailed inventory and performance reports.",
-      icon: "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
+      description: "Delete the registered Product .",
+      icon: "https://cdn-icons-png.flaticon.com/128/1214/1214428.png",
       action: "/warehouse/delete_product"
     }
   ];

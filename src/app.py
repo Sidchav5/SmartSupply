@@ -277,7 +277,14 @@ def update_sales():
 
     today = date.today().isoformat()
 
-    # Ensure a sales record exists (insert or update)
+    # 1. Get product name
+    cursor.execute("SELECT name FROM products WHERE id = %s", (product_id,))
+    product = cursor.fetchone()
+    if not product:
+        return jsonify({"error": "Product not found"}), 404
+    product_name = product["name"]
+
+    # 2. Insert/update sales record in DB
     cursor.execute("""
         INSERT INTO marketplace_sales
         (manager_id, product_id, sold_quantity, sale_date)
@@ -285,31 +292,47 @@ def update_sales():
         ON DUPLICATE KEY UPDATE sold_quantity = sold_quantity + VALUES(sold_quantity)
     """, (manager_id, product_id, sold_quantity, today))
 
-    # Decrease offline_inventory
+    # 3. Update offline inventory
     cursor.execute("""
         UPDATE offline_inventory
         SET quantity = quantity - %s
         WHERE manager_id = %s AND product_id = %s
     """, (sold_quantity, manager_id, product_id))
 
-    # Reflect change for warehouse availability (stays accurate via offline_inventory)
+    # 4. Get updated quantity after sale
+    cursor.execute("""
+        SELECT quantity FROM offline_inventory
+        WHERE manager_id = %s AND product_id = %s
+    """, (manager_id, product_id))
+    remaining = cursor.fetchone()
+    remaining_stock = remaining["quantity"] if remaining else 0
 
     conn.commit()
 
-    # Create/update JSON log file
-    fname = os.path.join(SALES_DIR, f"{manager_id}_{today}.json")
-    entry = {"product_id": product_id, "sold_quantity": sold_quantity}
-    if os.path.exists(fname):
-        with open(fname, 'r+') as f:
+    # 5. Prepare log entry
+    log_entry = {
+        "manager_id": manager_id,
+        "product_id": product_id,
+        "product_name": product_name,
+        "sold_quantity": sold_quantity,
+        "remaining_stock": remaining_stock,
+        "timestamp": date.today().isoformat()
+    }
+
+    # 6. Log to daily file
+    log_file_path = os.path.join(SALES_DIR, f"{today}.json")
+    if os.path.exists(log_file_path):
+        with open(log_file_path, 'r+') as f:
             logs = json.load(f)
-            logs.append(entry)
+            logs.append(log_entry)
             f.seek(0)
             json.dump(logs, f, indent=2)
     else:
-        with open(fname, 'w') as f:
-            json.dump([entry], f, indent=2)
+        with open(log_file_path, 'w') as f:
+            json.dump([log_entry], f, indent=2)
 
-    return jsonify({"message": "Sales updated successfully!"})
+    return jsonify({"message": "Sales updated and logged successfully!"})
+
 
 @app.route("/marketplace/sales", methods=["GET"])
 def get_sales():
