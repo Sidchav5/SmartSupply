@@ -18,7 +18,7 @@ function HeroSection() {
         <div className="poster-info">
           <p>
             Welcome to SmartSupply360 – It is your intelligent food inventory and distribution optimizer. View product freshness,
-            availability, store pricing, and smart delivery options — all in real time, powered by AI and IoT.
+            availability, store pricing, and smart delivery options — all in real time, powered by AI.
           </p>
           <div className="cta-buttons">
             <a href="/register" className="btn btn-warning mx-2">Get Started</a>

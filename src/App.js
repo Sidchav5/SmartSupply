@@ -13,6 +13,7 @@ import UpdateProduct from './components/UpdateProduct';
 import DeleteProduct from './components/DeleteProduct';
 // ...other imports
 const currentManagerId = localStorage.getItem("manager_id");
+const currentConsumerId = localStorage.getItem("consumer_id");
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
         {/* Add more routes as needed */}
         
          {/* login router */}
-        <Route path="/consumer" element={<Consumer />} />
+        
         <Route path="/marketplace" element={<MarketPlace />} />
         <Route path="/warehouse" element={<Warehouse />} />
 
@@ -38,6 +39,12 @@ function App() {
           {/* manger routes */}
            <Route path="/marketplace/update-sales" element={<MarketplaceUpdateSales managerId={currentManagerId} />} />
             <Route path="/store/availability" element={<StoreAvailability />} /> {/* ✅ New Route */}
+
+ 
+<Route path="/consumer" element={<Consumer consumerId={currentConsumerId} />} />
+
+
+
       </Routes>
     </Router>
   );

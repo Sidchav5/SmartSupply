@@ -29,10 +29,8 @@ useEffect(() => {
   fetchProducts();
 }, [searchTerm]); // 👈 fetch products whenever searchTerm changes
 
-  const filteredProducts = products.filter(product =>
-  product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  product.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) // ✅ Fix here
-);
+  const filteredProducts = products; // Just use the backend response
+
 
 
   const calculateAvailablePercentage = (product) => {

@@ -10,9 +10,11 @@ function WarehouseInventoryForm() {
   name: '',
   total_quantity: '',
   online_quantity: '',
+  price: '',  // ✅ New
   offline_allocations: [{ manager_id: '', quantity: '' }],
   image_base64: ''
 });
+
 
 
   const [errors, setErrors] = useState({});
@@ -29,6 +31,9 @@ function WarehouseInventoryForm() {
     if (!product.online_quantity || product.online_quantity < 0 || 
         Number(product.online_quantity) > Number(product.total_quantity)) 
       newErrors.online_quantity = 'Online quantity must be ≤ total quantity';
+      if (!product.price || Number(product.price) <= 0) 
+  newErrors.price = 'Valid price is required';
+
     
     product.offline_allocations.forEach((alloc, index) => {
       if (!alloc.manager_id) 
@@ -99,12 +104,15 @@ function WarehouseInventoryForm() {
       await axios.post('http://localhost:5000/warehouse/add_product', product);
       setSuccessMessage('Product and stock allocation added successfully!');
       setProduct({
-        product_id: '',
-        name: '',
-        total_quantity: '',
-        online_quantity: '',
-        offline_allocations: [{ manager_id: '', quantity: '' }]
-      });
+  product_id: '',
+  name: '',
+  total_quantity: '',
+  online_quantity: '',
+  price: '', // ✅ reset
+  offline_allocations: [{ manager_id: '', quantity: '' }],
+  image_base64: ''
+});
+
       setTimeout(() => setSuccessMessage(''), 5000);
     } catch (err) {
       console.error(err);
@@ -160,6 +168,20 @@ function WarehouseInventoryForm() {
               />
               {errors.name && <span className="error-text">{errors.name}</span>}
             </div>
+            <div className="form-group">
+  <label htmlFor="price">Price (₹)</label>
+  <input
+    id="price"
+    name="price"
+    type="number"
+    min="0"
+    placeholder="Enter product price"
+    value={product.price}
+    onChange={handleChange}
+    className={errors.price ? 'input-error' : ''}
+  />
+  {errors.price && <span className="error-text">{errors.price}</span>}
+</div>
 
             <div className="form-group">
   <label htmlFor="image">Product Image</label>

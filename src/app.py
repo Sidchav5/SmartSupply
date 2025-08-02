@@ -11,7 +11,8 @@ CORS(app, supports_credentials=True)
 # Directory for sales logs
 SALES_DIR = os.path.join(os.getcwd(), 'src', 'offline_sales_history')
 os.makedirs(SALES_DIR, exist_ok=True)
-
+SALES_ONLINE_DIR = os.path.join(os.getcwd(), 'src', 'online_sales_history')
+os.makedirs(SALES_ONLINE_DIR, exist_ok=True)
 # MySQL Connection
 conn = mysql.connector.connect(
     host="localhost",
@@ -80,7 +81,19 @@ def login_user(table_name, email, password):
 @app.route("/login/consumer", methods=["POST"])
 def login_consumer():
     data = request.get_json()
-    return login_user("consumers", data["email"], data["password"])
+    cursor.execute("SELECT * FROM consumers WHERE email = %s", (data["email"],))
+    user = cursor.fetchone()
+    
+    if user and bcrypt.checkpw(data["password"].encode("utf-8"), user["password"].encode("utf-8")):
+        return jsonify({
+            "message": "Login successful",
+            "role": "Consumer",
+            "name": user["name"],
+            "id": user["id"]  # ✅ Include consumer ID for frontend
+        })
+    
+    return jsonify({"message": "Invalid credentials"}), 401
+
 
 @app.route("/login/marketplace_manager", methods=["POST"])
 def login_marketplace_manager():
@@ -112,50 +125,46 @@ def add_product():
     name = data["name"]
     total_quantity = data["total_quantity"]
     online_quantity = data["online_quantity"]
-    offline_allocations = data["offline_allocations"]  # [{manager_id: "MP001", quantity: 10}, ...]
-    image_base64 = data.get("image_base64")  # Optional
+    price = data["price"]  # ✅ new field
+    offline_allocations = data["offline_allocations"]
+    image_base64 = data.get("image_base64")
 
-
-    # Insert product
     cursor.execute(
-    "INSERT INTO products (id, name, total_quantity, image_base64) VALUES (%s, %s, %s, %s)",
-    (product_id, name, total_quantity, image_base64)
-)
+        "INSERT INTO products (id, name, total_quantity, price, image_base64) VALUES (%s, %s, %s, %s, %s)",
+        (product_id, name, total_quantity, price, image_base64)
+    )
 
-
-    # Insert online allocation
     cursor.execute(
         "INSERT INTO online_inventory (product_id, quantity) VALUES (%s, %s)",
         (product_id, online_quantity)
     )
 
-    # Insert offline allocations
     for alloc in offline_allocations:
-     cursor.execute("""
-        INSERT INTO offline_inventory (product_id, manager_id, quantity, initial_quantity)
-        VALUES (%s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE 
-            quantity = quantity + VALUES(quantity),
-            initial_quantity = initial_quantity + VALUES(initial_quantity)
-    """, (product_id, alloc["manager_id"], alloc["quantity"], alloc["quantity"]))
+        cursor.execute("""
+            INSERT INTO offline_inventory (product_id, manager_id, quantity, initial_quantity)
+            VALUES (%s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE 
+                quantity = quantity + VALUES(quantity),
+                initial_quantity = initial_quantity + VALUES(initial_quantity)
+        """, (product_id, alloc["manager_id"], alloc["quantity"], alloc["quantity"]))
 
     conn.commit()
     return jsonify({"message": "Product and allocations added successfully!"})
+
 
 @app.route("/warehouse/availability", methods=["GET"])
 def product_availability():
     search_term = request.args.get("search", "").strip().lower()
 
-    # Build query with optional search filter
     if search_term:
         query = """
             SELECT * FROM products 
-            WHERE LOWER(name) LIKE %s OR LOWER(id) LIKE %s
+            WHERE LOWER(name) LIKE %s OR CAST(id AS CHAR) LIKE %s
         """
         cursor.execute(query, (f"%{search_term}%", f"%{search_term}%"))
     else:
         cursor.execute("SELECT * FROM products")
-    
+
     products = cursor.fetchall()
 
     # Online quantities
@@ -171,13 +180,12 @@ def product_availability():
         pid = p["id"]
         online_qty = online.get(pid, 0)
         prod_offline = [r for r in off if r["product_id"] == pid]
-        
+
         store_details = [
             {"manager_id": r["manager_id"], "quantity": r["quantity"]}
             for r in prod_offline
         ]
         total_offline_allocated = sum(r["quantity"] for r in prod_offline)
-        
         offline_left = p["total_quantity"] - online_qty - total_offline_allocated
 
         response.append({
@@ -185,6 +193,7 @@ def product_availability():
             "name": p["name"],
             "total_quantity": p["total_quantity"],
             "created_at": p["created_at"],
+            "price": p["price"],
             "online_quantity": online_qty,
             "offline_store_allocations": store_details,
             "offline_left": offline_left,
@@ -199,6 +208,7 @@ def update_product():
     name = data.get('name')  # Optional
     total_quantity = data.get('total_quantity')
     online_quantity = data.get('online_quantity')
+    price = data.get('price')  # <-- New field
     offline_allocations = data.get('offline_allocations')
     image_base64 = data.get('image_base64')
 
@@ -212,12 +222,12 @@ def update_product():
     if not name:
         name = result[0]
 
-    # Step 2: Update products table
+    # Step 2: Update products table (include price)
     cursor.execute("""
         UPDATE products
-        SET name = %s, total_quantity = %s, image_base64 = %s
+        SET name = %s, total_quantity = %s, price = %s, image_base64 = %s
         WHERE id = %s
-    """, (name, total_quantity, image_base64, product_id))
+    """, (name, total_quantity, price, image_base64, product_id))
 
     # Step 3: Update online_inventory only if it exists
     cursor.execute("SELECT 1 FROM online_inventory WHERE product_id = %s", (product_id,))
@@ -256,7 +266,8 @@ def update_product():
 def delete_product(product_id):
     cursor = conn.cursor()
 
-    # Delete all related rows from dependent tables first
+    # Delete all dependent records first (respecting FK constraints)
+    cursor.execute("DELETE FROM order_items WHERE product_id = %s", (product_id,))
     cursor.execute("DELETE FROM marketplace_sales WHERE product_id = %s", (product_id,))
     cursor.execute("DELETE FROM online_inventory WHERE product_id = %s", (product_id,))
     cursor.execute("DELETE FROM offline_inventory WHERE product_id = %s", (product_id,))
@@ -371,6 +382,120 @@ def store_availability():
 
 
     return jsonify(products)
+
+# Get all products for consumer with price and available online quantity
+@app.route('/consumer/availability', methods=['GET'])
+def consumer_availability():
+    cursor.execute("""
+        SELECT p.id, p.name, p.image_base64, p.price, oi.quantity AS online_quantity
+        FROM products p
+        LEFT JOIN online_inventory oi ON (p.id = oi.product_id)
+    """)
+    products = cursor.fetchall()
+    return jsonify(products)
+
+# Place order from consumer Cart
+@app.route('/consumer/place_order', methods=['POST'])
+def place_order():
+    data = request.json
+
+    app.logger.info(f"🔧 Incoming data payload: {data}")
+    # Now check consumer_id presence
+    cid = data.get('consumer_id')
+    app.logger.info(f"🔧 consumer_id raw: {cid!r}, type: {type(cid)}")
+    try:
+        consumer_id = int(data.get('consumer_id'))
+        name = data['name']
+        address = data['address']
+        payment_mode = data['payment_mode']
+        cart = data['cart']
+    except (KeyError, TypeError, ValueError) as e:
+        return jsonify({"error": f"Invalid or missing data: {str(e)}"}), 400
+
+    if not cart or not isinstance(cart, list):
+        return jsonify({"error": "Cart must be a non-empty list"}), 400
+
+    today = date.today().isoformat()
+
+    try:
+        # Validate inventory
+        for item in cart:
+            pid = int(item['product_id'])
+            qty = int(item['quantity'])
+
+            cursor.execute("SELECT quantity FROM online_inventory WHERE product_id = %s", (pid,))
+            row = cursor.fetchone()
+            if not row or row['quantity'] < qty:
+                return jsonify({"error": f"Insufficient stock for product ID {pid}"}), 400
+
+        # Compute total
+        total_amount = round(sum(int(item['quantity']) * float(item['price']) for item in cart), 2)
+
+        # Insert into `orders` table
+        cursor.execute("""
+            INSERT INTO orders (consumer_id, name, address, payment_mode, total_amount, order_date)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (consumer_id, name, address, payment_mode, total_amount, today))
+        order_id = cursor.lastrowid
+
+        # Insert order items and update inventory
+        for item in cart:
+            pid = int(item['product_id'])
+            qty = int(item['quantity'])
+            price = float(item['price'])
+
+            cursor.execute("""
+                INSERT INTO order_items (order_id, product_id, quantity, price_at_order)
+                VALUES (%s, %s, %s, %s)
+            """, (order_id, pid, qty, price))
+
+            cursor.execute("""
+                UPDATE online_inventory SET quantity = quantity - %s WHERE product_id = %s
+            """, (qty, pid))
+
+        conn.commit()
+
+    except Exception as db_error:
+        conn.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Database error: {repr(db_error)}"}), 500
+
+
+
+    # ✅ Log the order in a JSON file for the day
+    entry = {
+        "consumer_id": consumer_id,
+        "order_id": order_id,
+        "name": name,
+        "address": address,
+        "payment_mode": payment_mode,
+        "items": cart,
+        "total": float(total_amount)
+    }
+
+    # Ensure directory exists
+    os.makedirs(SALES_ONLINE_DIR, exist_ok=True)
+    fname = os.path.join(SALES_ONLINE_DIR, f"{today}.json")
+
+    try:
+        if os.path.exists(fname):
+            with open(fname, 'r+', encoding='utf-8') as f:
+                try:
+                    logs = json.load(f)
+                except json.JSONDecodeError:
+                    logs = []
+                logs.append(entry)
+                f.seek(0)
+                json.dump(logs, f, indent=2)
+                f.truncate()
+        else:
+            with open(fname, 'w', encoding='utf-8') as f:
+                json.dump([entry], f, indent=2)
+    except Exception as json_error:
+        return jsonify({"error": f"Order placed but failed to log JSON: {str(json_error)}"}), 500
+
+    return jsonify({"order_id": order_id, "total": total_amount})
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -47,6 +47,23 @@ function Login() {
     localStorage.setItem("manager_id", res.data.manager_id);
   }
 
+
+// Save ID with a role-specific key
+// Remove old IDs to avoid confusion
+localStorage.removeItem("user_id");
+localStorage.removeItem("consumer_id");
+
+// Save ID with role-specific key
+if (res.data.role === "Consumer") {
+  localStorage.setItem("consumer_id", res.data.id);
+} else {
+  localStorage.setItem("user_id", res.data.id);
+}
+
+
+
+
+
   setMessage({
     text: `${res.data.message}, Welcome ${res.data.name}`,
     type: 'success'
