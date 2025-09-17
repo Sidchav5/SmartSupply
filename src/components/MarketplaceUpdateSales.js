@@ -3,7 +3,9 @@ import axios from 'axios';
 import './MarketplaceUpdateSales.css';
 import Navbar from './Navbar';
 import Footer from './Footer';
-function MarketplaceUpdateSales({ managerId }) {
+function MarketplaceUpdateSales() {
+   const managerId = localStorage.getItem("manager_id");
+
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState(null);
   const [available, setAvailable] = useState(0);

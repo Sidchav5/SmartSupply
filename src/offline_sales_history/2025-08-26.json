@@ -1,0 +1,10 @@
+[
+  {
+    "manager_id": "M2",
+    "product_id": 1,
+    "product_name": "Apple",
+    "sold_quantity": 10,
+    "remaining_stock": 20,
+    "timestamp": "2025-08-26"
+  }
+]
