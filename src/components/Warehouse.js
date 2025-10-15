@@ -21,10 +21,10 @@ function Warehouse() {
       action: "/warehouse/availability"
     },
     {
-      title: "Suggest Allocation",
+      title: "Suggest Allocation & Price",
       description: "Get AI-powered suggestions for optimal product allocation.",
       icon: "https://cdn-icons-png.flaticon.com/512/1995/1995463.png",
-      action: "/warehouse/allocation"
+      action: "/warehouse/allocation-pricing"
     },
     {
       title: "Generate Reports",

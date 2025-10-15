@@ -4,6 +4,8 @@ import mysql.connector
 import bcrypt
 import os, json
 from datetime import date
+from models.price import predict_price
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -496,6 +498,29 @@ def place_order():
         return jsonify({"error": f"Order placed but failed to log JSON: {str(json_error)}"}), 500
 
     return jsonify({"order_id": order_id, "total": total_amount})
+
+@app.route("/predict_price", methods=["POST"])
+def predict_price_endpoint():
+    """
+    Expects JSON with keys:
+    base_price, demand, stock, day_of_week, season, discount, product_name, days
+    """
+    data = request.get_json()
+
+    try:
+        price = predict_price(
+            base_price=float(data["base_price"]),
+            demand=int(data["demand"]),
+            stock=int(data["stock"]),
+            day_of_week=int(data["day_of_week"]),
+            season=str(data["season"]),
+            discount=float(data["discount"]),
+            product_name=str(data["product_name"]),
+            days=int(data["days"])
+        )
+        return jsonify({"predicted_price": price})
+    except Exception as e:
+        return jsonify({"error": f"Invalid input or prediction failed: {str(e)}"}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)

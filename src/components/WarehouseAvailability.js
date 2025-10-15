@@ -109,6 +109,10 @@ useEffect(() => {
                       <span className="stat-label">Online:</span>
                       <span className="stat-value">{product.online_quantity}</span>
                     </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Price:</span>
+                      <span className="stat-value">{product.price}</span>
+                    </div>
                     <div className="stat-item offline">
   <span className="stat-label">Sold (Offline):</span>
   <span className="stat-value">{product.offline_left}</span>

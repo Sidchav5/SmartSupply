@@ -11,6 +11,8 @@ import MarketplaceUpdateSales from './components/MarketplaceUpdateSales';
 import StoreAvailability from "./components/storeManagerAvailability"; // ⬅️ Import new page
 import UpdateProduct from './components/UpdateProduct';
 import DeleteProduct from './components/DeleteProduct';
+import AllocationPricing from './components/AllocationPricing';
+import PredictPrice from './components/PredictPrice';
 // ...other imports
 const currentManagerId = localStorage.getItem("manager_id");
 const currentConsumerId = localStorage.getItem("consumer_id");
@@ -34,7 +36,8 @@ function App() {
           <Route path="/warehouse/availability" element={<WarehouseAvailability />} />
           <Route path="/warehouse/update_product" element={<UpdateProduct />} />
           <Route path="/warehouse/delete_product" element={<DeleteProduct />} />
-
+          <Route path="/warehouse/allocation-pricing" element={<AllocationPricing  />} />
+          <Route path="/warehouse/dynamic-price" element={<PredictPrice  />} />
 
           {/* manger routes */}
            <Route path="/marketplace/update-sales" element={<MarketplaceUpdateSales managerId={currentManagerId} />} />

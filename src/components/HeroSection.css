@@ -108,6 +108,7 @@
   width: 100%;
   position: fixed;
   top: 0;
+  height: 50px;
   z-index: 1000;
   display: flex;
   justify-content: space-between;
