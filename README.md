@@ -1,70 +1,297 @@
-# Getting Started with Create React App
+# SmartSupply
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**SmartSupply** is an AI-powered inventory and supply-chain management platform designed to help businesses manage warehouse stock, allocate inventory intelligently, forecast demand, and dynamically price products.
+It enables real-time coordination between warehouse managers, marketplace owners, and consumers — bridging online and offline stock tracking through a seamless web interface.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Table of Contents
 
-### `npm start`
+* [Features](#features)
+* [System Architecture](#system-architecture)
+* [Tech Stack](#tech-stack)
+* [Getting Started](#getting-started)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+  * [Run (Development)](#run-development)
+  * [Run (Production)](#run-production)
+* [Configuration](#configuration)
+* [Usage](#usage)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+  * [Role-Based Portals](#role-based-portals)
+  * [AI Modules](#ai-modules)
+* [Dataset & Forecasting](#dataset--forecasting)
+* [Visualization](#visualization)
+* [Contributing](#contributing)
+* [Roadmap](#roadmap)
+* [License](#license)
+* [Contact](#contact)
+* [Acknowledgements](#acknowledgements)
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🌟 Features
 
-### `npm run build`
+* **Multi-role access system**
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  * Warehouse Manager, Marketplace Manager, Store Manager, Consumer, and Admin dashboards
+* **Inventory allocation system**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  * Intelligent allocation from warehouse to online/offline stores
+* **Real-time stock synchronization**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+  * Updates reflected across all roles after each sale or allocation
+* **Dynamic Pricing Engine**
 
-### `npm run eject`
+  * AI-based pricing suggestions using demand, season, stock, and discount trends
+* **Sales forecasting module**
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+  * ML-based predictive model trained on generated datasets
+* **Offline & Online JSON-based logging**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  * Daily logs stored as JSON for further CSV export and analysis
+* **Product image management**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+  * Base64 storage of uploaded product images in MySQL
+* **Clean, responsive React UI**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+  * Gradient-based, card-style dashboard for all roles
+* **Automated data balancing**
 
-## Learn More
+  * SMOTE and synthetic data generation for model training (10k+ records)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🧠 System Architecture
 
-### Code Splitting
+```
+Frontend (React + Bootstrap + CSS)
+        |
+        |--> API Calls (Axios/Fetch)
+        |
+Backend (Flask)
+        |
+        |--> Inventory Management
+        |--> AI Models (Allocation, Forecasting, Pricing)
+        |
+Database (MySQL)
+        |
+        |--> JSON Storage for offline/online logs
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## ⚙️ Tech Stack
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+**Frontend:**
 
-### Making a Progressive Web App
+* React.js
+* Bootstrap 5 + Custom CSS
+* Axios for API communication
+* React Router for navigation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+**Backend:**
 
-### Advanced Configuration
+* Flask (Python)
+* Flask-CORS, Flask-RESTful
+* Pandas, Scikit-learn, Numpy
+* SMOTE for data balancing
+* Matplotlib for visualization
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+**Database:**
 
-### Deployment
+* MySQL
+* Tables for `users`, `products`, `allocations`, `sales`, etc.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+**ML/AI:**
 
-### `npm run build` fails to minify
+* Demand forecasting (RandomForest, Linear Regression)
+* Pricing optimization
+* Warehouse stock allocation suggestions
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Auth:**
+
+* JWT-based token authentication
+
+**Deployment (optional):**
+
+* Render / Railway / Vercel (Frontend)
+* Docker / Flask-Gunicorn (Backend)
+
+---
+
+## 🧩 Getting Started
+
+### Prerequisites
+
+* Python 3.9+
+* Node.js 18+
+* MySQL server running locally or on cloud
+* Git installed
+
+---
+
+### Installation
+
+1. Clone the repository
+
+   ```bash
+   git clone https://github.com/Sidchav5/SmartSupply.git
+   cd SmartSupply
+   ```
+
+2. Setup backend
+
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   python app.py
+   ```
+
+3. Setup frontend
+
+   ```bash
+   cd frontend
+   npm install
+   npm start
+   ```
+
+4. Open in browser:
+
+   ```
+   http://localhost:3000
+   ```
+
+---
+
+### Run (Production)
+
+```bash
+npm run build
+flask run --host=0.0.0.0 --port=5000
+```
+
+(Optional: Use Docker Compose for combined build.)
+
+---
+
+## ⚙️ Configuration
+
+Create `.env` files in both `frontend/` and `backend/` directories.
+
+Example for Flask backend:
+
+```
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=yourpassword
+DB_NAME=smartsupply
+JWT_SECRET=supersecretkey
+```
+
+---
+
+## 🧭 Usage
+
+### Role-Based Portals
+
+| Role                    | Features                                                 |
+| ----------------------- | -------------------------------------------------------- |
+| **Warehouse Manager**   | Add/update products, allocate stock, view availability   |
+| **Marketplace Manager** | Update daily sales, monitor stock & sales analytics      |
+| **Store Manager**       | Update offline sales and view assigned products          |
+| **Consumer**            | View product catalog, check freshness, purchase products |
+| **Admin**               | Monitor overall performance and manage user roles        |
+
+---
+
+### AI Modules
+
+1. **Smart Allocation** – Suggests optimal distribution of stock to online/offline stores
+2. **Dynamic Pricing** – Adjusts product prices using trained regression models
+3. **Sales Forecasting** – Predicts demand trends using seasonal & temporal features
+
+---
+
+## 📊 Dataset & Forecasting
+
+* Synthetic dataset (`smart_supply_dataset.csv`) created using SMOTE for balanced product instances.
+* ~10,000 records across 15 food items.
+* Features: `base_price`, `demand`, `stock`, `day_of_week`, `season`, `discount`, `final_price`.
+* Trained models stored in `/backend/models/`.
+
+---
+
+## 📈 Visualization
+
+Visual insights include:
+
+* Product-wise demand vs stock bar charts
+* Seasonal sales trends
+* Discount vs final price regression plots
+* Correlation heatmaps of features
+
+All charts are generated and saved automatically in Google Drive via Colab notebooks.
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a branch:
+
+   ```bash
+   git checkout -b feature/my-feature
+   ```
+3. Commit changes and push:
+
+   ```bash
+   git commit -m "Added new feature"
+   git push origin feature/my-feature
+   ```
+4. Open a Pull Request
+
+Coding guidelines:
+
+* Follow PEP8 & ESLint
+* Keep commits atomic and descriptive
+* Write meaningful docstrings and comments
+
+---
+
+## 🗺️ Roadmap
+
+* [ ] Add AI-driven reorder alert system
+* [ ] Implement warehouse-to-warehouse transfers
+* [ ] Integrate supplier portal for purchase orders
+* [ ] Add mobile-friendly React Native app
+* [ ] Deploy via Docker and CI/CD pipeline
+
+---
+
+## 🪪 License
+
+MIT License © 2025 [Siddhesh Chavan]
+
+---
+
+## 📬 Contact
+
+**Developer:** Siddhesh Sharad Chavan
+
+* GitHub: [Sidchav5](https://github.com/Sidchav5)
+* Email: [csiddhesh768@gmail.com](mailto:csiddhesh768@gmail.com)
+* Department of AI & Data Science, VIT Pune
+
+---
+
+## 💡 Acknowledgements
+
+* Bootstrap Icons & Flaticon for UI assets
+* scikit-learn for forecasting and regression modeling
+* Matplotlib & Pandas for data visualization
+* Flask + React ecosystem
+* Dataset generation inspired by internal project “RetailIntel360”
+
+---
