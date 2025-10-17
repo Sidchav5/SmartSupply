@@ -270,11 +270,7 @@ Coding guidelines:
 
 ---
 
-## 🪪 License
 
-MIT License © 2025 [Siddhesh Chavan]
-
----
 
 ## 📬 Contact
 
